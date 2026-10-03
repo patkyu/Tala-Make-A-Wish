@@ -10,6 +10,15 @@ export default function LoginForm({ linkError }: { linkError: boolean }) {
     linkError ? "That sign-in link expired or was already used. Send a new one." : ""
   );
 
+  async function signInWithGoogle() {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=/edit` },
+    });
+    if (error) setError(error.message);
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("sending");
@@ -25,15 +34,6 @@ export default function LoginForm({ linkError }: { linkError: boolean }) {
     } else setStatus("sent");
   }
 
-async function signInWithGoogle() {
-  const supabase = createClient();
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: { redirectTo: `${window.location.origin}/auth/callback?next=/edit` },
-  });
-  if (error) setError(error.message);
-}
-  
   if (status === "sent") {
     return (
       <div className="login-card">
@@ -47,9 +47,15 @@ async function signInWithGoogle() {
   return (
     <form className="login-card" onSubmit={onSubmit}>
       <h1>Sign in</h1>
-      <p>We&apos;ll email you a link. No password needed.</p>
+      <p>Continue with Google, or get a sign-in link by email.</p>
+
+      <button className="btn primary" type="button" onClick={signInWithGoogle}>
+        Continue with Google
+      </button>
+
       <input
         className="text-field"
+        style={{ marginTop: 16 }}
         type="email"
         required
         autoComplete="email"
@@ -58,7 +64,7 @@ async function signInWithGoogle() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
-      <button className="btn primary" type="submit" disabled={status === "sending"}>
+      <button className="btn" type="submit" disabled={status === "sending"}>
         {status === "sending" ? "Sending link…" : "Send sign-in link"}
       </button>
       {error && <div className="err">{error}</div>}
