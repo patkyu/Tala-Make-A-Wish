@@ -25,6 +25,15 @@ export default function LoginForm({ linkError }: { linkError: boolean }) {
     } else setStatus("sent");
   }
 
+async function signInWithGoogle() {
+  const supabase = createClient();
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: `${window.location.origin}/auth/callback?next=/edit` },
+  });
+  if (error) setError(error.message);
+}
+  
   if (status === "sent") {
     return (
       <div className="login-card">
